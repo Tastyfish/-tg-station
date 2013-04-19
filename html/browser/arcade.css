@@ -1,0 +1,92 @@
+.screen
+{
+	clear: both;
+	width: 320px;
+	margin: 0px auto;
+	background: #101020;
+	border: 2px solid #404040;
+}
+
+.enemybar
+{
+	float: right;
+	text-align: right;
+	background-color: #FFFF80;
+	border-left: 1em solid #808040;
+	border-bottom: .5em solid #C0C060;
+	padding: .5em 1em;
+	color: black;
+}
+.selfbar
+{
+	clear: both;
+	float: left;
+	text-align: left;
+	background-color: #C0FFFF;
+	border-right: 1em solid #608080;
+	border-top: .5em solid #90C0C0;
+	padding: .5em 1em;
+	color: black;
+}
+.flash
+{
+	background-color: #FFF0F0;
+}
+
+.status
+{
+	clear: both;
+	text-align: center;
+	font-weight: bold;
+	font-size: 12pt;
+	padding: 1em;
+	color: white;
+	height: 2em;
+	vertical-align: middle;
+}
+
+.actions
+{
+	clear: both;
+	background-color: #F0F0F0;
+	border-top: 2px solid #808090;
+	padding: .5em 2em;
+	text-align: center;
+}
+
+.attack:link, .attack:visited
+{
+	padding: .5em 1em;
+	background-color: #A04040;
+	border: 1px solid #502020;
+	color: white;
+}
+.attack:hover
+{
+	background-color: white;
+	color: #A04040;
+}
+.heal:link, .heal:visited
+{
+	padding: .5em 1em;
+	background-color: #408040;
+	border: 1px solid #204020;
+	color: white;
+}
+a.heal:hover
+{
+	background-color: white;
+	color: #408040;
+}
+.recharge:link, .recharge:visited
+{
+	padding: .5em 1em;
+	background-color: #4040A0;
+	border: 1px solid #202050;
+	color: white;
+}
+a.recharge:hover
+{
+	background-color: white;
+	color: #4040A0;
+}

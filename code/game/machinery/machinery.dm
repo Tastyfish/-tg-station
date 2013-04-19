@@ -237,3 +237,5 @@ Class Procs:
 	uid = gl_uid
 	gl_uid++
 
+/obj/machinery/proc/on_unset(mob/user) // handler for a user going away from machine
+	return

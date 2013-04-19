@@ -33,6 +33,7 @@
 							/obj/item/toy/prize/odysseus					= 1,
 							/obj/item/toy/prize/phazon						= 1
 							)
+	var/datum/browser/ajax/browser
 
 /obj/machinery/computer/arcade
 	var/turtle = 0
@@ -59,31 +60,89 @@
 	return src.attack_hand(user)
 
 /obj/machinery/computer/arcade/attack_hand(mob/user as mob)
-	if(..())
+	if(..() || user.machine == src)
 		return
-	user.set_machine(src)
-	var/dat = "<a href='byond://?src=\ref[src];close=1'>Close</a>"
-	dat += "<center><h4>[src.enemy_name]</h4></center>"
 
-	dat += "<br><center><h3>[src.temp]</h3></center>"
-	dat += "<br><center>Health: [src.player_hp] | Magic: [src.player_mp] | Enemy Health: [src.enemy_hp]</center>"
+	user.set_machine(src)
+
+	if(!browser)
+		browser = new("arcade", "Space Villian 3000", nref=src)
+		browser.add_stylesheet("arcade", 'html/browser/arcade.css')
+
+	var/dat = "<div class='screen'>"
+	dat += "<div class='enemybar' id='enemy'><b>[browser.create_label("e_name", enemy_name)]</b><br>Health: [browser.create_label("e_hp", enemy_hp)]</div>"
+	dat += "<div class='status' id='temp'>[temp]</div>"
+	dat += "<div class='selfbar' id='player'><b>Hero</b><br>Health: [browser.create_label("p_hp", player_hp)]<br>Magic: [browser.create_label("p_mp", player_mp)]</div>"
+
+	dat += "<div class='actions'>"
 
 	if (src.gameover)
-		dat += "<center><b><a href='byond://?src=\ref[src];newgame=1'>New Game</a>"
+		dat += browser.create_button("newgame", "New Game", "recharge")
 	else
-		dat += "<center><b><a href='byond://?src=\ref[src];attack=1'>Attack</a> | "
-		dat += "<a href='byond://?src=\ref[src];heal=1'>Heal</a> | "
-		dat += "<a href='byond://?src=\ref[src];charge=1'>Recharge Power</a>"
+		dat += browser.create_button("attack", "Attack", "attack")
+		dat += browser.create_button("heal", "Heal", "heal")
+		dat += browser.create_button("recharge", "Recharge", "recharge")
 
-	dat += "</b></center>"
+	dat += "</div></div>"
 
-	//user << browse(dat, "window=arcade")
-	//onclose(user, "arcade")
-	var/datum/browser/popup = new(user, "arcade", "Space Villian 2000")
-	popup.set_content(dat)
-	popup.set_title_image(user.browse_rsc_icon(src.icon, src.icon_state))
-	popup.open()
+	browser.open(user, dat)
 	return
+
+/obj/machinery/computer/arcade/proc/set_enemy_name(value)
+	enemy_name = value
+	if(browser)
+		browser.set_inner_content("e_name", value)
+
+/obj/machinery/computer/arcade/proc/set_player_hp(value)
+	player_hp = value
+	if(browser)
+		browser.set_inner_content("p_hp", value)
+
+/obj/machinery/computer/arcade/proc/hurt_player(amt)
+	set_player_hp(player_hp - amt)
+	flash_player()
+
+/obj/machinery/computer/arcade/proc/set_player_mp(value)
+	player_mp = value
+	if(browser)
+		browser.set_inner_content("p_mp", value)
+
+/obj/machinery/computer/arcade/proc/set_enemy_hp(value)
+	enemy_hp = value
+	if(browser)
+		browser.set_inner_content("e_hp", value)
+
+/obj/machinery/computer/arcade/proc/hurt_enemy(amt)
+	set_enemy_hp(enemy_hp - amt)
+	flash_enemy()
+
+/obj/machinery/computer/arcade/proc/set_enemy_mp(value)
+	enemy_mp = value
+
+/obj/machinery/computer/arcade/proc/set_temp(value)
+	temp = value
+	if(browser)
+		browser.set_inner_content("temp", value)
+
+/obj/machinery/computer/arcade/proc/flash_player()
+	if(!browser)
+		return
+	spawn(0)
+		for(var/i = 1 to 2)
+			browser.set_class("player", "selfbar flash")
+			sleep(2)
+			browser.set_class("player", "selfbar")
+			sleep(2)
+
+/obj/machinery/computer/arcade/proc/flash_enemy()
+	if(!browser)
+		return
+	spawn(0)
+		for(var/i = 1 to 2)
+			browser.set_class("enemy", "enemybar flash")
+			sleep(2)
+			browser.set_class("enemy", "enemybar")
+			sleep(2)
 
 /obj/machinery/computer/arcade/Topic(href, href_list)
 	if(..())
@@ -93,39 +152,35 @@
 		if (href_list["attack"])
 			src.blocked = 1
 			var/attackamt = rand(2,6)
-			src.temp = "You attack for [attackamt] damage!"
-			src.updateUsrDialog()
+			set_temp("You attack for [attackamt] damage!")
 			if(turtle > 0)
 				turtle--
+			hurt_enemy(attackamt)
 
 			sleep(10)
-			src.enemy_hp -= attackamt
 			src.arcade_action()
 
 		else if (href_list["heal"])
 			src.blocked = 1
 			var/pointamt = rand(1,3)
 			var/healamt = rand(6,8)
-			src.temp = "You use [pointamt] magic to heal for [healamt] damage!"
-			src.updateUsrDialog()
+			set_temp("You use [pointamt] magic to heal for [healamt] damage!")
 			turtle++
 
 			sleep(10)
-			src.player_mp -= pointamt
-			src.player_hp += healamt
+			set_player_mp(player_mp - pointamt)
+			set_player_hp(player_hp + healamt)
 			src.blocked = 1
-			src.updateUsrDialog()
 			src.arcade_action()
 
-		else if (href_list["charge"])
+		else if (href_list["recharge"])
 			src.blocked = 1
 			var/chargeamt = rand(4,7)
-			src.temp = "You regain [chargeamt] points"
-			src.player_mp += chargeamt
+			set_temp("You regain [chargeamt] points")
+			set_player_mp(player_mp + chargeamt)
 			if(turtle > 0)
 				turtle--
 
-			src.updateUsrDialog()
 			sleep(10)
 			src.arcade_action()
 
@@ -135,10 +190,10 @@
 
 	else if (href_list["newgame"]) //Reset everything
 		temp = "New Round"
-		player_hp = 30
-		player_mp = 10
-		enemy_hp = 45
-		enemy_mp = 20
+		set_player_hp(30)
+		set_player_mp(10)
+		set_enemy_hp(45)
+		set_enemy_mp(20)
 		gameover = 0
 		turtle = 0
 
@@ -147,14 +202,13 @@
 			emagged = 0
 
 	src.add_fingerprint(usr)
-	src.updateUsrDialog()
 	return
 
 /obj/machinery/computer/arcade/proc/arcade_action()
 	if ((src.enemy_mp <= 0) || (src.enemy_hp <= 0))
 		if(!gameover)
 			src.gameover = 1
-			src.temp = "[src.enemy_name] has fallen! Rejoice!"
+			set_temp("[src.enemy_name] has fallen! Rejoice!")
 
 			if(emagged)
 				feedback_inc("arcade_win_emagged")
@@ -182,19 +236,18 @@
 
 	else if (emagged && (turtle >= 4))
 		var/boomamt = rand(5,10)
-		src.temp = "[src.enemy_name] throws a bomb, exploding you for [boomamt] damage!"
-		src.player_hp -= boomamt
+		set_temp("[src.enemy_name] throws a bomb, exploding you for [boomamt] damage!")
+		hurt_player(boomamt)
 
 	else if ((src.enemy_mp <= 5) && (prob(70)))
 		var/stealamt = rand(2,3)
-		src.temp = "[src.enemy_name] steals [stealamt] of your power!"
-		src.player_mp -= stealamt
-		src.updateUsrDialog()
+		set_temp("[src.enemy_name] steals [stealamt] of your power!")
+		set_player_mp(player_mp - stealamt)
 
 		if (src.player_mp <= 0)
 			src.gameover = 1
 			sleep(10)
-			src.temp = "You have been drained! GAME OVER"
+			set_temp("You have been drained! GAME OVER")
 			if(emagged)
 				feedback_inc("arcade_loss_mana_emagged")
 				usr.gib()
@@ -202,18 +255,18 @@
 				feedback_inc("arcade_loss_mana_normal")
 
 	else if ((src.enemy_hp <= 10) && (src.enemy_mp > 4))
-		src.temp = "[src.enemy_name] heals for 4 health!"
-		src.enemy_hp += 4
-		src.enemy_mp -= 4
+		set_temp("[src.enemy_name] heals for 4 health!")
+		set_enemy_hp(enemy_hp + 4)
+		set_enemy_mp(enemy_mp - 4)
 
 	else
 		var/attackamt = rand(3,6)
-		src.temp = "[src.enemy_name] attacks for [attackamt] damage!"
-		src.player_hp -= attackamt
+		set_temp("[src.enemy_name] attacks for [attackamt] damage!")
+		hurt_player(attackamt)
 
 	if ((src.player_mp <= 0) || (src.player_hp <= 0))
 		src.gameover = 1
-		src.temp = "You have been crushed! GAME OVER"
+		set_temp("You have been crushed! GAME OVER")
 		if(emagged)
 			feedback_inc("arcade_loss_hp_emagged")
 			usr.gib()
@@ -226,21 +279,19 @@
 
 /obj/machinery/computer/arcade/attackby(I as obj, user as mob)
 	if(istype(I, /obj/item/weapon/card/emag) && !emagged)
-		temp = "If you die in the game, you die for real!"
-		player_hp = 30
-		player_mp = 10
-		enemy_hp = 45
-		enemy_mp = 20
+		set_temp("If you die in the game, you die for real!")
+		set_player_hp(30)
+		set_player_mp(10)
+		set_enemy_hp(45)
+		set_enemy_mp(20)
 		gameover = 0
 		blocked = 0
 
 		emagged = 1
 
-		enemy_name = "Cuban Pete"
+		set_enemy_name("Cuban Pete")
 		name = "Outbomb Cuban Pete"
 
-
-		src.updateUsrDialog()
 	else if(istype(I, /obj/item/weapon/screwdriver))
 		playsound(src.loc, 'sound/items/Screwdriver.ogg', 50, 1)
 		if(do_after(user, 20))
@@ -278,3 +329,6 @@
 		new empprize(src.loc)
 
 	..(severity)
+
+/obj/machinery/computer/arcade/on_unset(mob/user)
+	browser.close(user)

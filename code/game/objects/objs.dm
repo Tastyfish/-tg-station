@@ -95,10 +95,13 @@
 	return
 
 /mob/proc/unset_machine()
+	if(src.machine)
+		// make sure machine knows
+		src.machine.on_unset(src)
 	src.machine = null
 
 /mob/proc/set_machine(var/obj/O)
-	if(src.machine)
+	if(src.machine && src.machine != O)
 		unset_machine()
 	src.machine = O
 	if(istype(O))

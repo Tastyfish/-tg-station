@@ -7,6 +7,9 @@
 				src.nutrition -= HUNGER_FACTOR/10
 		if((FAT in src.mutations) && src.m_intent == "run" && src.bodytemperature <= 360)
 			src.bodytemperature += 2
+		// unset from machine if walk away
+		if(!(src in viewers(1, machine)))
+			unset_machine()
 
 /mob/living/carbon/relaymove(var/mob/user, direction)
 	if(user in src.stomach_contents)
