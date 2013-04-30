@@ -12,6 +12,7 @@
 	var/next_trans = 0
 	var/current_heat_capacity = 50
 
+	var/datum/browser/ajax/browser
 
 /obj/machinery/atmospherics/unary/cryo_cell/New()
 	..()
@@ -67,6 +68,9 @@
 
 
 /obj/machinery/atmospherics/unary/cryo_cell/interact(mob/user)
+	if(!browser)
+		browser = new(src)
+
 	var/dat = "<h3>Cryo Cell Status</h3>"
 
 	dat += "<div class='statusDisplay'>"
@@ -74,16 +78,23 @@
 	if(!occupant)
 		dat += "Cell Unoccupied"
 	else
-		dat += "[occupant.name] => "
+		dat += "[browser.create_label("name", occupant.name)] => "
 		switch(occupant.stat) // obvious, see what their status is
 			if(0)
-				dat += "<span class='good'>Conscious</span>"
+				dat += browser.create_label("stat", "Conscious", "good")
 			if(1)
-				dat += "<span class='average'>Unconscious</span>"
+				dat += browser.create_label("stat", "Unconscious", "average")
 			else
-				dat += "<span class='bad'>DEAD</span>"
+				dat += browser.create_label("stat", "DEAD", "bad")
 
-		dat += "<br />"
+		dat += browser.br
+
+		dat +=  "<div class='line'><div class='statusLabel'>Health:</div>[browser.create_progress("health_bar", round(occupant.health))]<div class='statusValue'>[browser.create_label("health", round(occupant.health))]%</div></div>"
+		dat +=  "<div class='line'><div class='statusLabel'>&gt; Brute Damage:</div>[browser.create_progress("brute_bar", round(occupant.health))]<div class='statusValue'>[browser.create_label("brute", round(occupant.getBruteLoss()))]%</div></div>"
+		dat +=  "<div class='line'><div class='statusLabel'>&gt; Resp. Damage:</div><div class='progressBar'><div style='width: [round(occupant.getOxyLoss())]%;' class='progressFill bad'></div></div><div class='statusValue'>[round(occupant.getOxyLoss())]%</div></div>"
+		dat +=  "<div class='line'><div class='statusLabel'>&gt; Toxin Content:</div><div class='progressBar'><div style='width: [round(occupant.getToxLoss())]%;' class='progressFill bad'></div></div><div class='statusValue'>[round(occupant.getToxLoss())]%</div></div>"
+		dat +=  "<div class='line'><div class='statusLabel'>&gt; Burn Severity:</div><div class='progressBar'><div style='width: [round(occupant.getFireLoss())]%;' class='progressFill bad'></div></div><div class='statusValue'>[round(occupant.getFireLoss())]%</div></div>"
+		dat +=  "<div class='line'><div class='statusLabel'>Body Temperature:</div><div class='statusValue'>[round(occupant.bodytemperature)]</div></div>"
 
 		dat +=  "<div class='line'><div class='statusLabel'>Health:</div><div class='progressBar'><div style='width: [round(occupant.health)]%;' class='progressFill good'></div></div><div class='statusValue'>[round(occupant.health)]%</div></div>"
 		dat +=  "<div class='line'><div class='statusLabel'>\> Brute Damage:</div><div class='progressBar'><div style='width: [round(occupant.getBruteLoss())]%;' class='progressFill bad'></div></div><div class='statusValue'>[round(occupant.getBruteLoss())]%</div></div>"
