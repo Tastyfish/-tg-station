@@ -130,6 +130,7 @@
 #include "subsystem_init.dm"
 #include "surgeries.dm"
 #include "teleporters.dm"
+#include "test_annotations.dm"
 #include "tgui_create_message.dm"
 #include "timer_sanity.dm"
 #include "traitor.dm"
