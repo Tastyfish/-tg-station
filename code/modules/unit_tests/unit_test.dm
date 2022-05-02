@@ -105,7 +105,7 @@ GLOBAL_VAR(test_log)
 		var/line = fail_reasons[reasonID][3]
 
 		/// Github action annotation.
-		log_world("::error file={[file]},line={[line]},title={[test_path] Failed}::{[text]}")
+		log_world("::error file=[file],line=[line],title=[test_path]::[text]")
 
 		// Normal log message
 		log_entry += "\tREASON #[reasonID]: [text] at [file]:[line]"
