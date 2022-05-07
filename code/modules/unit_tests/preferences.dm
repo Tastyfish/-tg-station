@@ -49,3 +49,10 @@
 			continue
 
 		TEST_ASSERT(!isnull(preference.main_feature_name), "Preference [preference_type] does not have a main_feature_name set!")
+
+/proc/zzz_runtime()
+	var/i = 0
+	return 45 / i
+
+/datum/unit_test/zzz_runtime/Run()
+	TEST_ASSERT_EQUAL(zzz_runtime(), INFINITY, "Check if x/0 ~= infinity")
