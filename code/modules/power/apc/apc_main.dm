@@ -165,7 +165,7 @@
 		area = get_area_instance_from_text(areastring)
 		if(!area)
 			area = our_area
-			stack_trace("Bad areastring path for [src], [areastring]")
+			log_mapping("Bad areastring path for [src] at [AREACOORD(src)]: [areastring]")
 	else if(isarea(our_area) && areastring == null)
 		area = our_area
 

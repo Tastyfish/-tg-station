@@ -27,10 +27,14 @@
 
 /obj/structure/lattice/Initialize(mapload)
 	. = ..()
-	for(var/obj/structure/lattice/LAT in loc)
-		if(LAT == src)
+	for(var/obj/structure/lattice/neighbor in loc)
+		if(neighbor == src)
 			continue
-		stack_trace("multiple lattices found in ([loc.x], [loc.y], [loc.z])")
+		log_mapping("Multiple lattices found at [AREACOORD(src)]! Please remove one of them.")
+		return INITIALIZE_HINT_QDEL
+
+	if(mapload && istype(loc, /turf/closed/wall))
+		log_mapping("Found [src] stacked with [loc] at [AREACOORD(src)]! Please remove [src], or remove [loc].")
 		return INITIALIZE_HINT_QDEL
 
 /obj/structure/lattice/blob_act(obj/structure/blob/B)

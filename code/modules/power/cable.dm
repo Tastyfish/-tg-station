@@ -43,6 +43,12 @@ GLOBAL_LIST_INIT(wire_node_generating_types, typecacheof(list(/obj/structure/gri
 /obj/structure/cable/Initialize(mapload)
 	. = ..()
 
+	for(var/obj/structure/cable/neighbor in loc)
+		if(neighbor == src)
+			continue
+		log_mapping("Multiple cables found at [AREACOORD(src)]! Please remove one of them.")
+		return INITIALIZE_HINT_QDEL
+
 	GLOB.cable_list += src //add it to the global cable list
 	Connect_cable()
 	AddElement(/datum/element/undertile, TRAIT_T_RAY_VISIBLE)
